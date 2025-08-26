@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -9,10 +9,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IndianRupee, Car, Clock, Calendar, TrendingUp, CreditCard } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import DutyForm from "@/components/forms/DutyForm"; // Assuming DutyForm component exists
 
 export default function DriverDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const [showDutyForm, setShowDutyForm] = useState(false);
+  const [dutyFormType, setDutyFormType] = useState("start"); // "start" or "end"
+  const [currentDutyLog, setCurrentDutyLog] = useState(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -46,6 +58,65 @@ export default function DriverDashboard() {
     select: (payouts: any[]) => payouts?.filter((p: any) => p.driverId === driver?.id),
   });
 
+  const { data: dutyHistory } = useQuery({
+    queryKey: ["/api/duty-logs", driver?.id],
+    enabled: !!driver?.id,
+    retry: false,
+  });
+
+  const dutyMutation = useMutation({
+    mutationFn: async (dutyData: any) => {
+      const response = await fetch("/api/duty-logs", {
+        method: dutyData.id ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dutyData),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to submit duty log");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/duty-logs"] });
+      toast({
+        title: "Success",
+        description: "Duty log updated successfully.",
+      });
+      setShowDutyForm(false);
+      setCurrentDutyLog(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStartDutyClick = useCallback(() => {
+    setDutyFormType("start");
+    setCurrentDutyLog(null); // Ensure no previous data is loaded for start
+    setShowDutyForm(true);
+  }, []);
+
+  const handleEndDutyClick = useCallback((dutyLog: any) => {
+    setDutyFormType("end");
+    setCurrentDutyLog(dutyLog);
+    setShowDutyForm(true);
+  }, []);
+
+  const handleDutySubmit = (data: any) => {
+    if (dutyFormType === "start") {
+      dutyMutation.mutate({ ...data, driverId: driver?.id, startTime: new Date().toISOString() });
+    } else {
+      dutyMutation.mutate({ ...data, id: currentDutyLog.id, endTime: new Date().toISOString() });
+    }
+  };
+
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -56,19 +127,19 @@ export default function DriverDashboard() {
 
   // Calculate today's earnings
   const today = new Date().toDateString();
-  const todaysTrips = driverTrips?.filter((trip: any) => 
+  const todaysTrips = driverTrips?.filter((trip: any) =>
     new Date(trip.startTime).toDateString() === today && trip.status === 'completed'
   ) || [];
-  
-  const todaysRevenue = todaysTrips.reduce((sum: number, trip: any) => 
+
+  const todaysRevenue = todaysTrips.reduce((sum: number, trip: any) =>
     sum + parseFloat(trip.totalAmount), 0
   );
-  
-  const todaysDriverShare = todaysTrips.reduce((sum: number, trip: any) => 
+
+  const todaysDriverShare = todaysTrips.reduce((sum: number, trip: any) =>
     sum + parseFloat(trip.driverShare || '0'), 0
   );
-  
-  const todaysCompanyShare = todaysTrips.reduce((sum: number, trip: any) => 
+
+  const todaysCompanyShare = todaysTrips.reduce((sum: number, trip: any) =>
     sum + parseFloat(trip.companyShare || '0'), 0
   );
 
@@ -76,12 +147,12 @@ export default function DriverDashboard() {
   const weekStart = new Date();
   weekStart.setDate(weekStart.getDate() - weekStart.getDay());
   weekStart.setHours(0, 0, 0, 0);
-  
-  const weeklyTrips = driverTrips?.filter((trip: any) => 
+
+  const weeklyTrips = driverTrips?.filter((trip: any) =>
     new Date(trip.startTime) >= weekStart && trip.status === 'completed'
   ) || [];
-  
-  const weeklyDriverShare = weeklyTrips.reduce((sum: number, trip: any) => 
+
+  const weeklyDriverShare = weeklyTrips.reduce((sum: number, trip: any) =>
     sum + parseFloat(trip.driverShare || '0'), 0
   );
 
@@ -91,18 +162,35 @@ export default function DriverDashboard() {
     .slice(0, 5) || [];
 
   // Get recent payouts
-  const recentPayouts = driverPayouts?.sort((a: any, b: any) => 
+  const recentPayouts = driverPayouts?.sort((a: any, b: any) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   ).slice(0, 3) || [];
+
+  // Determine if the driver is currently on duty
+  const currentDuty = dutyHistory?.find((duty: any) => !duty.endTime);
+  const isDutyActive = !!currentDuty;
 
   return (
     <div className="flex h-screen bg-background">
       <Sidebar userRole={user?.role || "driver"} />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title="Driver Dashboard" />
-        
+
         <main className="flex-1 overflow-auto p-6">
+          {/* Duty Start/End Button */}
+          <div className="mb-6 flex justify-end">
+            {isDutyActive ? (
+              <Button onClick={() => handleEndDutyClick(currentDuty)} className="bg-red-600 hover:bg-red-700">
+                End Duty
+              </Button>
+            ) : (
+              <Button onClick={handleStartDutyClick}>
+                Start Duty
+              </Button>
+            )}
+          </div>
+
           {/* Daily Earnings Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
@@ -184,7 +272,7 @@ export default function DriverDashboard() {
           </Card>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Recent Trips */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -206,9 +294,9 @@ export default function DriverDashboard() {
                             {new Date(trip.startTime).toLocaleDateString('en-IN')}
                           </p>
                           <p className="text-sm text-muted-foreground" data-testid={`text-trip-time-${trip.id}`}>
-                            {new Date(trip.startTime).toLocaleTimeString('en-IN', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
+                            {new Date(trip.startTime).toLocaleTimeString('en-IN', {
+                              hour: '2-digit',
+                              minute: '2-digit'
                             })}
                           </p>
                         </div>
@@ -232,7 +320,7 @@ export default function DriverDashboard() {
               </CardContent>
             </Card>
 
-            {/* Payout History */}
+            {/* Recent Payouts */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg font-semibold">Payout History</CardTitle>
@@ -246,13 +334,13 @@ export default function DriverDashboard() {
                     <div key={payout.id} className="flex items-center justify-between p-3 bg-muted rounded-md" data-testid={`card-payout-${payout.id}`}>
                       <div className="flex items-center space-x-3">
                         <div className={`w-10 h-10 ${
-                          payout.status === 'paid' ? 'bg-green-100' : 
-                          payout.status === 'pending' ? 'bg-amber-100' : 
+                          payout.status === 'paid' ? 'bg-green-100' :
+                          payout.status === 'pending' ? 'bg-amber-100' :
                           'bg-red-100'
                         } rounded-full flex items-center justify-center`}>
                           <CreditCard className={`h-5 w-5 ${
-                            payout.status === 'paid' ? 'text-green-600' : 
-                            payout.status === 'pending' ? 'text-amber-600' : 
+                            payout.status === 'paid' ? 'text-green-600' :
+                            payout.status === 'pending' ? 'text-amber-600' :
                             'text-red-600'
                           }`} />
                         </div>
@@ -269,10 +357,10 @@ export default function DriverDashboard() {
                         <p className="font-semibold text-foreground" data-testid={`text-payout-amount-${payout.id}`}>
                           ₹{parseFloat(payout.amount).toFixed(0)}
                         </p>
-                        <Badge 
+                        <Badge
                           variant={
-                            payout.status === 'paid' ? 'default' : 
-                            payout.status === 'pending' ? 'outline' : 
+                            payout.status === 'paid' ? 'default' :
+                            payout.status === 'pending' ? 'outline' :
                             'destructive'
                           }
                           className="text-xs"
@@ -286,6 +374,55 @@ export default function DriverDashboard() {
                     <div className="text-center py-8 text-muted-foreground">
                       <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>No payouts yet</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Duty History */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-lg font-semibold">Duty History</CardTitle>
+                <Button variant="ghost" size="sm">
+                  View All
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {dutyHistory && dutyHistory.length > 0 ? (
+                    dutyHistory.slice(0, 5).map((duty: any) => (
+                      <div key={duty.id} className="flex items-center justify-between p-3 bg-muted rounded-md">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Clock className="text-blue-600 h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {duty.startOdometer && duty.endOdometer
+                                ? `${duty.endOdometer - duty.startOdometer} km`
+                                : 'In Progress'
+                              }
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(duty.startTime).toLocaleDateString('en-IN')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-foreground">
+                            {duty.endTime ? 'Completed' : 'Active'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {duty.endTime ? new Date(duty.endTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No duty history yet</p>
                     </div>
                   )}
                 </div>
@@ -329,6 +466,25 @@ export default function DriverDashboard() {
           </Card>
         </main>
       </div>
+
+      {/* Duty Form Dialog */}
+      <Dialog open={showDutyForm} onOpenChange={setShowDutyForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {dutyFormType === "start" ? "Start Duty" : "End Duty"}
+            </DialogTitle>
+          </DialogHeader>
+          <DutyForm
+            dutyType={dutyFormType}
+            driverId={driver?.id}
+            defaultValues={dutyFormType === "end" ? currentDutyLog : undefined}
+            onSubmit={handleDutySubmit}
+            onCancel={() => setShowDutyForm(false)}
+            isSubmitting={dutyMutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

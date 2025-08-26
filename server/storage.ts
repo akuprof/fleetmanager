@@ -8,6 +8,7 @@ import {
   maintenanceLogs,
   alerts,
   vehicleAssignments,
+  dutyLogs,
   type User,
   type UpsertUser,
   type Vehicle,
@@ -25,15 +26,16 @@ import {
   type Alert,
   type InsertAlert,
   type VehicleAssignment,
+  type InsertDutyLog,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, sql, or } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Vehicle operations
   getVehicles(): Promise<Vehicle[]>;
   getVehicle(id: string): Promise<Vehicle | undefined>;
@@ -41,7 +43,7 @@ export interface IStorage {
   updateVehicle(id: string, vehicle: Partial<InsertVehicle>): Promise<Vehicle>;
   deleteVehicle(id: string): Promise<void>;
   getVehiclesByStatus(status: string): Promise<Vehicle[]>;
-  
+
   // Driver operations
   getDrivers(): Promise<Driver[]>;
   getDriver(id: string): Promise<Driver | undefined>;
@@ -49,7 +51,7 @@ export interface IStorage {
   createDriver(driver: InsertDriver): Promise<Driver>;
   updateDriver(id: string, driver: Partial<InsertDriver>): Promise<Driver>;
   deleteDriver(id: string): Promise<void>;
-  
+
   // Trip operations
   getTrips(): Promise<Trip[]>;
   getTrip(id: string): Promise<Trip | undefined>;
@@ -59,7 +61,7 @@ export interface IStorage {
   getTripsByDriver(driverId: string): Promise<Trip[]>;
   getTripsByVehicle(vehicleId: string): Promise<Trip[]>;
   getTripsByDateRange(startDate: Date, endDate: Date): Promise<Trip[]>;
-  
+
   // Expense operations
   getExpenses(): Promise<Expense[]>;
   getExpense(id: string): Promise<Expense | undefined>;
@@ -67,7 +69,7 @@ export interface IStorage {
   updateExpense(id: string, expense: Partial<InsertExpense>): Promise<Expense>;
   deleteExpense(id: string): Promise<void>;
   getExpensesByVehicle(vehicleId: string): Promise<Expense[]>;
-  
+
   // Payout operations
   getPayouts(): Promise<Payout[]>;
   getPayout(id: string): Promise<Payout | undefined>;
@@ -76,7 +78,7 @@ export interface IStorage {
   deletePayout(id: string): Promise<void>;
   getPayoutsByDriver(driverId: string): Promise<Payout[]>;
   getPendingPayouts(): Promise<Payout[]>;
-  
+
   // Maintenance operations
   getMaintenanceLogs(): Promise<MaintenanceLog[]>;
   getMaintenanceLog(id: string): Promise<MaintenanceLog | undefined>;
@@ -84,7 +86,7 @@ export interface IStorage {
   updateMaintenanceLog(id: string, log: Partial<InsertMaintenanceLog>): Promise<MaintenanceLog>;
   deleteMaintenanceLog(id: string): Promise<void>;
   getMaintenanceLogsByVehicle(vehicleId: string): Promise<MaintenanceLog[]>;
-  
+
   // Alert operations
   getAlerts(): Promise<Alert[]>;
   getAlert(id: string): Promise<Alert | undefined>;
@@ -93,13 +95,19 @@ export interface IStorage {
   deleteAlert(id: string): Promise<void>;
   getUnreadAlerts(): Promise<Alert[]>;
   markAlertAsRead(id: string): Promise<void>;
-  
+
   // Vehicle Assignment operations
   assignVehicleToDriver(vehicleId: string, driverId: string): Promise<VehicleAssignment>;
   unassignVehicleFromDriver(assignmentId: string): Promise<void>;
   getActiveAssignments(): Promise<VehicleAssignment[]>;
   getDriverCurrentVehicle(driverId: string): Promise<VehicleAssignment | undefined>;
-  
+
+  // Duty Log operations
+  getDutyLogs(driverId: string): Promise<any[]>;
+  getCurrentDutyLog(driverId: string): Promise<any | null>;
+  createDutyLog(data: InsertDutyLog): Promise<any>;
+  updateDutyLog(id: string, data: Partial<InsertDutyLog>): Promise<any>;
+
   // Analytics operations
   getDashboardMetrics(): Promise<{
     totalRevenue: number;
@@ -375,7 +383,71 @@ export class DatabaseStorage implements IStorage {
   }
 
   async markAlertAsRead(id: string): Promise<void> {
-    await db.update(alerts).set({ isRead: true }).where(eq(alerts.id, id));
+    return await db
+      .update(alerts)
+      .set({ isRead: true, updatedAt: new Date() })
+      .where(eq(alerts.id, id))
+      .returning();
+  }
+
+  // Duty log methods
+  async getDutyLogs(driverId: string) {
+    return await db
+      .select({
+        id: dutyLogs.id,
+        driverId: dutyLogs.driverId,
+        vehicleId: dutyLogs.vehicleId,
+        dutyStatus: dutyLogs.dutyStatus,
+        startTime: dutyLogs.startTime,
+        endTime: dutyLogs.endTime,
+        startOdometer: dutyLogs.startOdometer,
+        endOdometer: dutyLogs.endOdometer,
+        startCngLevel: dutyLogs.startCngLevel,
+        endCngLevel: dutyLogs.endCngLevel,
+        carCondition: dutyLogs.carCondition,
+        totalExpenses: dutyLogs.totalExpenses,
+        createdAt: dutyLogs.createdAt,
+        vehicle: {
+          registrationNumber: vehicles.registrationNumber,
+          make: vehicles.make,
+          model: vehicles.model,
+        },
+      })
+      .from(dutyLogs)
+      .leftJoin(vehicles, eq(dutyLogs.vehicleId, vehicles.id))
+      .where(eq(dutyLogs.driverId, driverId))
+      .orderBy(desc(dutyLogs.createdAt));
+  }
+
+  async getCurrentDutyLog(driverId: string) {
+    const result = await db
+      .select()
+      .from(dutyLogs)
+      .where(
+        and(
+          eq(dutyLogs.driverId, driverId),
+          eq(dutyLogs.dutyStatus, "on_duty"),
+          isNull(dutyLogs.endTime)
+        )
+      )
+      .orderBy(desc(dutyLogs.createdAt))
+      .limit(1);
+
+    return result[0] || null;
+  }
+
+  async createDutyLog(data: InsertDutyLog) {
+    const result = await db.insert(dutyLogs).values(data).returning();
+    return result[0];
+  }
+
+  async updateDutyLog(id: string, data: Partial<InsertDutyLog>) {
+    const result = await db
+      .update(dutyLogs)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(dutyLogs.id, id))
+      .returning();
+    return result[0];
   }
 
   // Vehicle Assignment operations

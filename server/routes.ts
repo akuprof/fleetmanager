@@ -10,6 +10,7 @@ import {
   insertPayoutSchema,
   insertMaintenanceLogSchema,
   insertAlertSchema,
+  insertDutyLogSchema,
 } from "@shared/schema";
 import { calculateRevenueSplit } from "../client/src/lib/revenue-calculator";
 
@@ -370,6 +371,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error marking alert as read:", error);
       res.status(500).json({ message: "Failed to mark alert as read" });
+    }
+  });
+
+  // Duty log routes
+  app.get('/api/duty-logs/:driverId', isAuthenticated, async (req, res) => {
+    try {
+      const dutyLogs = await storage.getDutyLogs(req.params.driverId);
+      res.json(dutyLogs);
+    } catch (error) {
+      console.error("Error fetching duty logs:", error);
+      res.status(500).json({ message: "Failed to fetch duty logs" });
+    }
+  });
+
+  app.get('/api/duty-logs/current/:driverId', isAuthenticated, async (req, res) => {
+    try {
+      const currentDutyLog = await storage.getCurrentDutyLog(req.params.driverId);
+      res.json(currentDutyLog);
+    } catch (error) {
+      console.error("Error fetching current duty log:", error);
+      res.status(500).json({ message: "Failed to fetch current duty log" });
+    }
+  });
+
+  app.post('/api/duty-logs', isAuthenticated, async (req: any, res) => {
+    try {
+      const validatedData = insertDutyLogSchema.parse(req.body);
+      const dutyLog = await storage.createDutyLog(validatedData);
+      res.status(201).json(dutyLog);
+    } catch (error) {
+      console.error("Error creating duty log:", error);
+      res.status(400).json({ message: "Failed to create duty log" });
+    }
+  });
+
+  app.put('/api/duty-logs/:id', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertDutyLogSchema.partial().parse(req.body);
+      const dutyLog = await storage.updateDutyLog(req.params.id, validatedData);
+      res.json(dutyLog);
+    } catch (error) {
+      console.error("Error updating duty log:", error);
+      res.status(400).json({ message: "Failed to update duty log" });
     }
   });
 

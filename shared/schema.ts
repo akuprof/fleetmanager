@@ -22,6 +22,8 @@ export const tripStatusEnum = pgEnum("trip_status", ["pending", "in_progress", "
 export const expenseTypeEnum = pgEnum("expense_type", ["fuel", "tolls", "repairs", "emi", "insurance", "maintenance", "other"]);
 export const payoutStatusEnum = pgEnum("payout_status", ["pending", "paid", "failed"]);
 export const alertTypeEnum = pgEnum("alert_type", ["insurance_expiry", "fitness_expiry", "service_due", "accident", "breakdown", "payout_pending"]);
+export const dutyStatusEnum = pgEnum("duty_status", ["on_duty", "off_duty"]);
+export const carConditionEnum = pgEnum("car_condition", ["excellent", "good", "fair", "needs_attention", "poor"]);
 
 // Session storage table (mandatory for Replit Auth)
 export const sessions = pgTable(
@@ -186,6 +188,34 @@ export const alerts = pgTable("alerts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Duty logs table
+export const dutyLogs = pgTable("duty_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  driverId: varchar("driver_id").references(() => drivers.id).notNull(),
+  vehicleId: varchar("vehicle_id").references(() => vehicles.id).notNull(),
+  dutyStatus: dutyStatusEnum("duty_status").notNull(),
+  
+  // Start duty fields
+  startTime: timestamp("start_time"),
+  startOdometer: integer("start_odometer"),
+  startCngLevel: decimal("start_cng_level", { precision: 5, scale: 2 }),
+  carCondition: carConditionEnum("car_condition"),
+  odometerPhoto: varchar("odometer_photo"),
+  startNotes: text("start_notes"),
+  
+  // End duty fields
+  endTime: timestamp("end_time"),
+  endOdometer: integer("end_odometer"),
+  endCngLevel: decimal("end_cng_level", { precision: 5, scale: 2 }),
+  totalExpenses: decimal("total_expenses", { precision: 10, scale: 2 }).default("0"),
+  expenseReceipts: text("expense_receipts"), // JSON array of receipt URLs
+  paymentDetails: text("payment_details"),
+  endNotes: text("end_notes"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   driver: one(drivers, { fields: [users.id], references: [drivers.userId] }),
@@ -238,6 +268,11 @@ export const maintenanceLogsRelations = relations(maintenanceLogs, ({ one }) => 
 export const alertsRelations = relations(alerts, ({ one }) => ({
   vehicle: one(vehicles, { fields: [alerts.vehicleId], references: [vehicles.id] }),
   driver: one(drivers, { fields: [alerts.driverId], references: [drivers.id] }),
+}));
+
+export const dutyLogsRelations = relations(dutyLogs, ({ one }) => ({
+  driver: one(drivers, { fields: [dutyLogs.driverId], references: [drivers.id] }),
+  vehicle: one(vehicles, { fields: [dutyLogs.vehicleId], references: [vehicles.id] }),
 }));
 
 // Insert schemas
@@ -296,6 +331,12 @@ export const insertAlertSchema = createInsertSchema(alerts).omit({
   updatedAt: true,
 });
 
+export const insertDutyLogSchema = createInsertSchema(dutyLogs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -313,4 +354,6 @@ export type MaintenanceLog = typeof maintenanceLogs.$inferSelect;
 export type InsertMaintenanceLog = z.infer<typeof insertMaintenanceLogSchema>;
 export type Alert = typeof alerts.$inferSelect;
 export type InsertAlert = z.infer<typeof insertAlertSchema>;
+export type DutyLog = typeof dutyLogs.$inferSelect;
+export type InsertDutyLog = z.infer<typeof insertDutyLogSchema>;
 export type VehicleAssignment = typeof vehicleAssignments.$inferSelect;
