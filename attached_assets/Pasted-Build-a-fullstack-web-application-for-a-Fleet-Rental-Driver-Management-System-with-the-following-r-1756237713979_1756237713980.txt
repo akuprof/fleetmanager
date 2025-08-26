@@ -1,0 +1,105 @@
+Build a fullstack web application for a Fleet Rental & Driver Management System with the following requirements:
+
+1. Authentication & User Roles
+
+Login / Signup with OTP or Email+Password.
+
+Role-based access:
+
+Admin (Owner): Full access.
+
+Manager: Can manage drivers, trips, payouts, expenses.
+
+Driver: Can only see trips, earnings, and payouts.
+
+2. Dashboards & Reports
+
+Admin Dashboard: Total fleet revenue (daily/weekly/monthly), net profit after expenses, driver payouts summary, vehicle utilization rate.
+
+Manager Dashboard: Trips overview, active/inactive drivers, pending payouts, expense & service alerts.
+
+Driver Dashboard: Daily earnings & company share, weekly/monthly payout summary, trip history.
+
+3. Fleet Management
+
+Add/Edit vehicles (RC, insurance, permit, fitness, service schedule).
+
+Vehicle status tracking: Available, On Duty, In Service, Accident.
+
+Maintenance logs (oil change, tyres, service history).
+
+Alerts for insurance renewals, fitness expiry, service due.
+
+4. Driver Management
+
+Driver onboarding (profile, license, ID, bank details).
+
+Assign driver → vehicle shift (daily/weekly).
+
+Track driver duty hours & daily targets.
+
+Driver performance analytics (avg revenue/day, reliability, complaints).
+
+5. Trip & Revenue Management
+
+Trip logging: Manual entry (driver/manager) + future Uber API integration.
+
+Revenue Sharing Formula (Auto-calculated):
+
+Up to ₹2,500/day → Driver 30% / Company 70%.
+
+Above ₹2,500/day → Driver 70% / Company 30%.
+
+Daily duty report with company vs driver split.
+
+Auto calculation of monthly profit per car.
+
+6. Expense Tracking
+
+Record fuel, tolls, repairs, EMI, insurance, etc.
+
+Upload bills/photos as proof.
+
+Auto deduct expenses from company share only.
+
+Analytics per vehicle, per category, per month.
+
+7. Payouts & Finance
+
+Driver Payouts: Auto-calculated weekly/monthly, mark as “Paid” (UPI/Bank ref).
+
+Company Finance Reports: Net after expenses, fleet-wise profit comparison.
+
+Export reports to Excel & PDF.
+
+8. Notifications & Alerts
+
+Vehicle service due, insurance/fitness expiry, pending payouts, driver shift reminders.
+
+Accident/breakdown log.
+
+9. Analytics & Insights
+
+Vehicle utilization (active vs idle).
+
+Driver productivity (revenue per driver).
+
+Expense vs revenue ratio.
+
+Profit forecasts (daily/weekly/monthly).
+
+Identify underperforming cars/drivers.
+
+10. Advanced Features (Future Scope)
+
+Uber API integration → Auto import daily trips & revenue.
+
+AI-powered anomaly detection → Catch fake/missing trips, expense fraud.
+
+WhatsApp/Telegram bot → Drivers can submit trips & check payouts.
+
+Mobile App (React Native/Flutter) for drivers & managers.
+
+GPS tracking via Uber/OBD devices.
+
+Dynamic target system (different targets per car/driver).
