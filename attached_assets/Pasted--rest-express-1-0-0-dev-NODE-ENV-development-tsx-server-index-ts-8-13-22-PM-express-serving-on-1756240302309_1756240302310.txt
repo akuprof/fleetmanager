@@ -1,0 +1,52 @@
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+8:13:22 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+8:13:26 PM [express] GET /api/auth/user 401 in 2ms :: {"message":"Unauthorized"}
+8:13:34 PM [express] GET /api/auth/user 304 in 693ms :: {"id":"46932864","email":"akbarilahalima@gma…
+8:13:35 PM [express] GET /api/alerts/unread 304 in 344ms :: []
+8:13:35 PM [express] GET /api/drivers 304 in 688ms :: []
+8:13:35 PM [express] GET /api/payouts/pending 304 in 692ms :: []
+8:13:35 PM [express] GET /api/payouts 304 in 682ms :: []
+8:15:12 PM [express] GET /api/auth/user 200 in 801ms :: {"id":"46932864","email":"akbarilahalima@gma…
+8:15:12 PM [express] GET /api/alerts/unread 200 in 356ms :: []
+8:15:13 PM [express] GET /api/payouts 200 in 703ms :: []
+8:15:13 PM [express] GET /api/payouts/pending 200 in 710ms :: []
+8:15:13 PM [express] GET /api/drivers 200 in 710ms :: []
+8:15:26 PM [express] GET /api/trips/driver/46932864 200 in 1375ms :: []
+8:15:49 PM [express] GET /api/logout 302 in 1144ms
+8:15:57 PM [express] GET /api/auth/user 401 in 225ms :: {"message":"Unauthorized"}
+express deprecated req.host: Use req.hostname instead file:/home/runner/workspace/node_modules/openid-client/build/passport.js:224:49
+8:16:26 PM [express] GET /api/login 302 in 951ms
+8:16:27 PM [express] GET /api/login 302 in 225ms
+8:16:29 PM [express] GET /api/login 302 in 917ms
+8:16:35 PM [express] GET /api/callback 302 in 1096ms
+8:16:42 PM [express] GET /api/auth/user 200 in 342ms :: {"id":"46932864","email":"akbarilahalima@gma…
+8:16:43 PM [express] GET /api/alerts/unread 304 in 340ms :: []
+8:16:43 PM [express] GET /api/payouts 304 in 684ms :: []
+8:16:43 PM [express] GET /api/drivers 304 in 687ms :: []
+8:16:43 PM [express] GET /api/payouts/pending 304 in 692ms :: []
+8:30:47 PM [vite] hmr update /src/components/forms/trip-form.tsx, /src/index.css?v=rc8dDXCID73zqKmzyVbux, /src/components/forms/vehicle-form.tsx, /src/components/forms/driver-form.tsx, /src/components/forms/expense-form.tsx
+8:30:48 PM [vite] hmr update /src/pages/dashboard/driver.tsx, /src/index.css?v=rc8dDXCID73zqKmzyVbux
+8:30:52 PM [vite] Internal server error: Failed to resolve import "@/components/forms/DutyForm" from "client/src/pages/dashboard/driver.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/runner/workspace/client/src/pages/dashboard/driver.tsx:18:21
+  32 |    DialogTitle
+  33 |  } from "@/components/ui/dialog";
+  34 |  import DutyForm from "@/components/forms/DutyForm";
+     |                        ^
+  35 |  export default function DriverDashboard() {
+  36 |    _s();
+      at TransformPluginContext._formatError (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49258:41)
+      at TransformPluginContext.error (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49253:16)
+      at normalizeUrl (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64291:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async <anonymous> (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64423:39)
+      at async Promise.all (index 14)
+      at async TransformPluginContext.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64350:7)
+      at async PluginContainer.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49099:18)
+      at async loadAndTransform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:51977:27)
+      at async viteTransformMiddleware (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:62105:24)
