@@ -9,3 +9,5 @@ restartPolicyType = "on_failure"
 
 [env]
 NODE_ENV = "production"
+DATABASE_URL = "postgresql://postgres:newnew@db.bfaaznkamabozpiyjych.supabase.co:5432/postgres"
+REPLIT_DOMAINS = "http://localhost:5000"
