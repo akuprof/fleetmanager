@@ -1,0 +1,600 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FleetFlow - Fleet Rental & Driver Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "sans-serif"],
+                }
+            },
+        }
+    };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(210 40% 8%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(210 40% 8%);
+            --primary: hsl(210 84% 39%);
+            --primary-foreground: hsl(0 0% 98%);
+            --secondary: hsl(210 40% 60%);
+            --secondary-foreground: hsl(210 40% 8%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(210 40% 45%);
+            --accent: hsl(210 40% 92%);
+            --accent-foreground: hsl(210 40% 8%);
+            --destructive: hsl(0 84% 60%);
+            --destructive-foreground: hsl(0 0% 98%);
+            --border: hsl(210 40% 92%);
+            --input: hsl(210 40% 96%);
+            --ring: hsl(210 84% 39%);
+            --radius: 0.5rem;
+        }
+        
+        .dark {
+            --background: hsl(210 40% 8%);
+            --foreground: hsl(210 40% 98%);
+            --card: hsl(210 40% 10%);
+            --card-foreground: hsl(210 40% 98%);
+            --primary: hsl(210 84% 39%);
+            --primary-foreground: hsl(0 0% 98%);
+            --secondary: hsl(210 40% 20%);
+            --secondary-foreground: hsl(210 40% 98%);
+            --muted: hsl(210 40% 15%);
+            --muted-foreground: hsl(210 40% 60%);
+            --accent: hsl(210 40% 15%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 84% 60%);
+            --destructive-foreground: hsl(0 0% 98%);
+            --border: hsl(210 40% 20%);
+            --input: hsl(210 40% 15%);
+            --ring: hsl(210 84% 39%);
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground font-sans">
+    
+    <!-- @COMPONENT: AppLayout [Main application layout with sidebar and content] -->
+    <div class="flex h-screen bg-background">
+        
+        <!-- @COMPONENT: Sidebar [Navigation sidebar for different sections] -->
+        <aside class="w-64 bg-card border-r border-border flex-shrink-0">
+            <div class="flex flex-col h-full">
+                <!-- Logo and Brand -->
+                <div class="p-6 border-b border-border">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-truck text-primary-foreground text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-foreground">FleetFlow</h1>
+                            <p class="text-sm text-muted-foreground">Admin Panel</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="flex-1 p-4 space-y-2">
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md bg-primary text-primary-foreground" data-active="true">
+                        <i class="fas fa-tachometer-alt w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md text-foreground hover:bg-accent transition-colors">
+                        <i class="fas fa-car w-5"></i>
+                        <span>Vehicles</span>
+                        <span class="ml-auto bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded-full">3</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md text-foreground hover:bg-accent transition-colors">
+                        <i class="fas fa-users w-5"></i>
+                        <span>Drivers</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md text-foreground hover:bg-accent transition-colors">
+                        <i class="fas fa-route w-5"></i>
+                        <span>Trips</span>
+                        <span class="ml-auto bg-amber-500 text-white text-xs px-2 py-1 rounded-full">12</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md text-foreground hover:bg-accent transition-colors">
+                        <i class="fas fa-rupee-sign w-5"></i>
+                        <span>Revenue</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md text-foreground hover:bg-accent transition-colors">
+                        <i class="fas fa-credit-card w-5"></i>
+                        <span>Expenses</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md text-foreground hover:bg-accent transition-colors">
+                        <i class="fas fa-money-bill-wave w-5"></i>
+                        <span>Payouts</span>
+                        <span class="ml-auto bg-green-500 text-white text-xs px-2 py-1 rounded-full">5</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md text-foreground hover:bg-accent transition-colors">
+                        <i class="fas fa-chart-bar w-5"></i>
+                        <span>Reports</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-md text-foreground hover:bg-accent transition-colors">
+                        <i class="fas fa-bell w-5"></i>
+                        <span>Alerts</span>
+                        <span class="ml-auto bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded-full">8</span>
+                    </a>
+                </nav>
+
+                <!-- User Profile -->
+                <div class="p-4 border-t border-border">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-primary-foreground"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-sm" data-bind="user.name">Rajesh Kumar</p>
+                            <p class="text-xs text-muted-foreground">Admin</p>
+                        </div>
+                        <button class="text-muted-foreground hover:text-foreground">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [Main content area with header and dashboard] -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- @COMPONENT: Header [Top navigation bar with search and notifications] -->
+            <header class="bg-card border-b border-border p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <h2 class="text-2xl font-bold text-foreground">Admin Dashboard</h2>
+                        <div class="flex items-center space-x-2 text-sm text-muted-foreground">
+                            <span>Last updated:</span>
+                            <span data-bind="lastUpdated">2 minutes ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Search -->
+                        <div class="relative">
+                            <input type="text" placeholder="Search..." 
+                                   class="pl-10 pr-4 py-2 border border-border rounded-md bg-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                            <i class="fas fa-search absolute left-3 top-3 text-muted-foreground"></i>
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-muted-foreground hover:text-foreground">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center">8</span>
+                        </button>
+                        
+                        <!-- Date Range Selector -->
+                        <select class="border border-border rounded-md px-3 py-2 bg-card text-foreground">
+                            <option>Today</option>
+                            <option>This Week</option>
+                            <option>This Month</option>
+                            <option>Custom Range</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Header -->
+
+            <!-- @COMPONENT: DashboardContent [Main dashboard content with metrics and data] -->
+            <main class="flex-1 overflow-auto p-6">
+                
+                <!-- Key Metrics Cards -->
+                <!-- @STATE: metrics:object = { totalRevenue, netProfit, activeVehicles, totalDrivers } -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Total Revenue</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="metrics.totalRevenue">₹1,24,500</p>
+                                <p class="text-sm text-green-600 mt-1">
+                                    <i class="fas fa-arrow-up"></i> +12.5% from yesterday
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-rupee-sign text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Net Profit</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="metrics.netProfit">₹87,150</p>
+                                <p class="text-sm text-green-600 mt-1">
+                                    <i class="fas fa-arrow-up"></i> +8.3% from yesterday
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Active Vehicles</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="metrics.activeVehicles">18/25</p>
+                                <p class="text-sm text-amber-600 mt-1">
+                                    <i class="fas fa-exclamation-triangle"></i> 3 need service
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-car text-orange-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Total Drivers</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="metrics.totalDrivers">22</p>
+                                <p class="text-sm text-green-600 mt-1">
+                                    <i class="fas fa-user-plus"></i> 2 new this week
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    
+                    <!-- Revenue Chart -->
+                    <div class="lg:col-span-2 bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-foreground">Revenue Trends</h3>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md">Daily</button>
+                                <button class="px-3 py-1 text-sm text-muted-foreground hover:text-foreground">Weekly</button>
+                                <button class="px-3 py-1 text-sm text-muted-foreground hover:text-foreground">Monthly</button>
+                            </div>
+                        </div>
+                        <!-- @FUNCTIONALITY: Revenue chart implementation using Chart.js or similar -->
+                        <div class="h-80 bg-muted rounded-md flex items-center justify-center">
+                            <div class="text-center text-muted-foreground">
+                                <i class="fas fa-chart-area text-4xl mb-2"></i>
+                                <p>Revenue Chart Component</p>
+                                <p class="text-sm">Chart.js implementation needed</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Performing Vehicles -->
+                    <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <h3 class="text-lg font-semibold text-foreground mb-4">Top Performers</h3>
+                        <!-- @MAP: topVehicles.map(vehicle => ( -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-muted rounded-md" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-car text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">KA05MA1234</p>
+                                        <p class="text-sm text-muted-foreground">Swift Dzire</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-foreground">₹3,450</p>
+                                    <p class="text-xs text-green-600">+15%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-muted rounded-md" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-car text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">KA01AB5678</p>
+                                        <p class="text-sm text-muted-foreground">Innova Crysta</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-foreground">₹3,200</p>
+                                    <p class="text-xs text-green-600">+8%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-muted rounded-md" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-car text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">KA02XY9012</p>
+                                        <p class="text-sm text-muted-foreground">Etios</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-foreground">₹2,890</p>
+                                    <p class="text-xs text-green-600">+5%</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+
+                <!-- Recent Activity and Alerts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    
+                    <!-- Recent Trips -->
+                    <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-foreground">Recent Trips</h3>
+                            <button class="text-primary hover:text-primary/80 text-sm font-medium">View All</button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- @MAP: recentTrips.map(trip => ( -->
+                            <div class="flex items-center justify-between py-3 border-b border-border last:border-b-0" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-check text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">KA05MA1234</p>
+                                        <p class="text-sm text-muted-foreground">Completed • Ramesh Kumar</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-foreground">₹485</p>
+                                    <p class="text-xs text-muted-foreground">2:30 PM</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between py-3 border-b border-border last:border-b-0" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-clock text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">KA01AB5678</p>
+                                        <p class="text-sm text-muted-foreground">In Progress • Suresh Patel</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-foreground">₹320</p>
+                                    <p class="text-xs text-muted-foreground">1:45 PM</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between py-3 border-b border-border last:border-b-0" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-check text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">KA02XY9012</p>
+                                        <p class="text-sm text-muted-foreground">Completed • Anil Singh</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-foreground">₹275</p>
+                                    <p class="text-xs text-muted-foreground">12:20 PM</p>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Alerts and Notifications -->
+                    <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-foreground">Critical Alerts</h3>
+                            <span class="bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded-full">8 Active</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- @MAP: alerts.map(alert => ( -->
+                            <div class="p-3 bg-red-50 border border-red-200 rounded-md" data-mock="true">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fas fa-exclamation-triangle text-red-600 mt-1"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-red-800">Insurance Expiring</p>
+                                        <p class="text-sm text-red-600">KA05MA1234 insurance expires in 5 days</p>
+                                        <p class="text-xs text-red-500 mt-1">2 hours ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-amber-50 border border-amber-200 rounded-md" data-mock="true">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fas fa-tools text-amber-600 mt-1"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-amber-800">Service Due</p>
+                                        <p class="text-sm text-amber-600">KA01AB5678 service overdue by 200 km</p>
+                                        <p class="text-xs text-amber-500 mt-1">1 day ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-blue-50 border border-blue-200 rounded-md" data-mock="true">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fas fa-money-bill-wave text-blue-600 mt-1"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-blue-800">Pending Payout</p>
+                                        <p class="text-sm text-blue-600">₹15,450 pending for 5 drivers</p>
+                                        <p class="text-xs text-blue-500 mt-1">3 hours ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                        
+                        <button class="w-full mt-4 py-2 text-primary hover:text-primary/80 font-medium text-sm">
+                            View All Alerts
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+                    <h3 class="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button class="flex items-center space-x-3 p-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors" data-event="click:handleAddTrip">
+                            <i class="fas fa-plus-circle text-xl"></i>
+                            <span class="font-medium">Add Trip</span>
+                        </button>
+                        
+                        <button class="flex items-center space-x-3 p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" data-event="click:handleAddVehicle">
+                            <i class="fas fa-car text-xl"></i>
+                            <span class="font-medium">Add Vehicle</span>
+                        </button>
+                        
+                        <button class="flex items-center space-x-3 p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" data-event="click:handleAddDriver">
+                            <i class="fas fa-user-plus text-xl"></i>
+                            <span class="font-medium">Add Driver</span>
+                        </button>
+                        
+                        <button class="flex items-center space-x-3 p-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors" data-event="click:handleGenerateReport">
+                            <i class="fas fa-file-download text-xl"></i>
+                            <span class="font-medium">Generate Report</span>
+                        </button>
+                    </div>
+                </div>
+
+            </main>
+            <!-- @END_COMPONENT: DashboardContent -->
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <!-- @COMPONENT: Modal [Reusable modal overlay for forms and details] -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-card p-6 rounded-lg border border-border shadow-xl max-w-2xl w-full m-4 max-h-screen overflow-y-auto">
+            <!-- Modal content will be dynamically loaded here -->
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-foreground">Modal Title</h3>
+                <button class="text-muted-foreground hover:text-foreground" data-event="click:closeModal">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Modal -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // Demo functionality for interactive elements
+            const sidebarLinks = document.querySelectorAll('aside nav a');
+            const quickActionButtons = document.querySelectorAll('[data-event^="click:"]');
+            const modalOverlay = document.getElementById('modal-overlay');
+            
+            // Sidebar navigation
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Remove active state from all links
+                    sidebarLinks.forEach(l => {
+                        l.classList.remove('bg-primary', 'text-primary-foreground');
+                        l.classList.add('text-foreground', 'hover:bg-accent');
+                    });
+                    // Add active state to clicked link
+                    this.classList.add('bg-primary', 'text-primary-foreground');
+                    this.classList.remove('text-foreground', 'hover:bg-accent');
+                });
+            });
+            
+            // Quick action buttons
+            quickActionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.getAttribute('data-event').split(':')[1];
+                    console.log(`Action triggered: ${action}`);
+                    // TODO: Implement actual modal opening logic
+                    showNotification(`${action} action triggered`, 'info');
+                });
+            });
+            
+            // Simple notification system
+            function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                    type === 'success' ? 'bg-green-600 text-white' :
+                    type === 'error' ? 'bg-red-600 text-white' :
+                    'bg-blue-600 text-white'
+                }`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+            
+            // Real-time updates simulation
+            function updateMetrics() {
+                const revenueElement = document.querySelector('[data-bind="metrics.totalRevenue"]');
+                if (revenueElement) {
+                    const currentRevenue = parseInt(revenueElement.textContent.replace(/[₹,]/g, ''));
+                    const newRevenue = currentRevenue + Math.floor(Math.random() * 1000);
+                    revenueElement.textContent = `₹${newRevenue.toLocaleString('en-IN')}`;
+                }
+            }
+            
+            // Update metrics every 30 seconds for demo
+            setInterval(updateMetrics, 30000);
+        })();
+    </script>
+</body>
+</html>
