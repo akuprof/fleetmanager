@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: fleetmanager-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: postgresql://postgres:newnew@db.bfaaznkamabozpiyjych.supabase.co:5432/postgres
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: REPLIT_DOMAINS
+        value: localhost:5000
