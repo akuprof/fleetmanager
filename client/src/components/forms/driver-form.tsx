@@ -64,7 +64,8 @@ export default function DriverForm({ onSubmit, onCancel, defaultValues, isSubmit
                     <FormControl>
                       <Input 
                         placeholder="+91 9876543210" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-phone"
                       />
                     </FormControl>
@@ -84,7 +85,8 @@ export default function DriverForm({ onSubmit, onCancel, defaultValues, isSubmit
                     <Textarea 
                       placeholder="Enter driver's address" 
                       className="resize-none"
-                      {...field} 
+                      {...field}
+                      value={field.value || ''}
                       data-testid="textarea-address"
                     />
                   </FormControl>
@@ -106,7 +108,7 @@ export default function DriverForm({ onSubmit, onCancel, defaultValues, isSubmit
                   </div>
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                       data-testid="switch-active-status"
                     />
@@ -179,7 +181,8 @@ export default function DriverForm({ onSubmit, onCancel, defaultValues, isSubmit
                     <FormControl>
                       <Input 
                         placeholder="1234 5678 9012" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-aadhar-number"
                       />
                     </FormControl>
@@ -197,7 +200,8 @@ export default function DriverForm({ onSubmit, onCancel, defaultValues, isSubmit
                     <FormControl>
                       <Input 
                         placeholder="123456789012" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-account-number"
                       />
                     </FormControl>
@@ -217,7 +221,8 @@ export default function DriverForm({ onSubmit, onCancel, defaultValues, isSubmit
                     <FormControl>
                       <Input 
                         placeholder="SBIN0001234" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-ifsc-code"
                       />
                     </FormControl>
@@ -235,7 +240,8 @@ export default function DriverForm({ onSubmit, onCancel, defaultValues, isSubmit
                     <FormControl>
                       <Input 
                         placeholder="State Bank of India" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-bank-name"
                       />
                     </FormControl>

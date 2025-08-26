@@ -149,7 +149,8 @@ export default function VehicleForm({ onSubmit, onCancel, defaultValues, isSubmi
                     <FormControl>
                       <Input 
                         placeholder="White" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-color"
                       />
                     </FormControl>
@@ -169,7 +170,8 @@ export default function VehicleForm({ onSubmit, onCancel, defaultValues, isSubmi
                         type="number" 
                         placeholder="50000" 
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        value={field.value || ''}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
                         data-testid="input-odometer"
                       />
                     </FormControl>

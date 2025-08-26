@@ -2,8 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IndianRupee, TrendingUp, Car, Users } from "lucide-react";
 
+interface MetricsData {
+  totalRevenue?: number;
+  netProfit?: number;
+  activeVehicles?: number;
+  totalDrivers?: number;
+}
+
 export default function MetricsCards() {
-  const { data: metrics, isLoading } = useQuery({
+  const { data: metrics, isLoading } = useQuery<MetricsData>({
     queryKey: ["/api/dashboard/metrics"],
     retry: false,
   });
@@ -31,7 +38,7 @@ export default function MetricsCards() {
     netProfit = 0,
     activeVehicles = 0,
     totalDrivers = 0,
-  } = metrics || {};
+  } = (metrics as MetricsData) || {};
 
   const revenueChange = 12.5; // This would come from API in real implementation
   const profitChange = 8.3;

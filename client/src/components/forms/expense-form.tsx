@@ -148,7 +148,8 @@ export default function ExpenseForm({ onSubmit, onCancel, defaultValues, isSubmi
                     <Textarea 
                       placeholder="Expense details..." 
                       className="resize-none"
-                      {...field} 
+                      {...field}
+                      value={field.value || ''}
                       data-testid="textarea-description"
                     />
                   </FormControl>
@@ -166,7 +167,8 @@ export default function ExpenseForm({ onSubmit, onCancel, defaultValues, isSubmi
                   <FormControl>
                     <Input 
                       placeholder="Upload receipt and paste URL here" 
-                      {...field} 
+                      {...field}
+                      value={field.value || ''}
                       data-testid="input-receipt-document"
                     />
                   </FormControl>

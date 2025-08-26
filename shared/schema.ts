@@ -267,8 +267,9 @@ export const insertTripSchema = createInsertSchema(trips).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-  driverShare: true,
-  companyShare: true,
+}).extend({
+  driverShare: z.number().optional(),
+  companyShare: z.number().optional(),
 });
 
 export const insertExpenseSchema = createInsertSchema(expenses).omit({

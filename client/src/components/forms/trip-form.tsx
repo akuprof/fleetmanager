@@ -178,7 +178,8 @@ export default function TripForm({ onSubmit, onCancel, defaultValues, isSubmitti
                     <FormControl>
                       <Input 
                         placeholder="Enter start location" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-start-location"
                       />
                     </FormControl>
@@ -196,7 +197,8 @@ export default function TripForm({ onSubmit, onCancel, defaultValues, isSubmitti
                     <FormControl>
                       <Input 
                         placeholder="Enter end location" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-end-location"
                       />
                     </FormControl>
@@ -218,7 +220,8 @@ export default function TripForm({ onSubmit, onCancel, defaultValues, isSubmitti
                         type="number" 
                         step="0.1"
                         placeholder="25.5" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                         data-testid="input-distance"
                       />
                     </FormControl>
@@ -238,7 +241,8 @@ export default function TripForm({ onSubmit, onCancel, defaultValues, isSubmitti
                         type="number" 
                         placeholder="45" 
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        value={field.value || ''}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
                         data-testid="input-duration"
                       />
                     </FormControl>
@@ -282,7 +286,8 @@ export default function TripForm({ onSubmit, onCancel, defaultValues, isSubmitti
                     <Textarea 
                       placeholder="Additional trip notes..." 
                       className="resize-none"
-                      {...field} 
+                      {...field}
+                      value={field.value || ''}
                       data-testid="textarea-notes"
                     />
                   </FormControl>

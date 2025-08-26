@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Car, Users, Plus, FileText, Bell, Clock, CheckCircle, AlertTriangle, Wrench, CreditCard } from "lucide-react";
+import type { Vehicle, Trip, Alert } from "@shared/schema";
 
 export default function AdminDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -31,17 +32,17 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: topVehicles } = useQuery({
+  const { data: topVehicles } = useQuery<Vehicle[]>({
     queryKey: ["/api/dashboard/top-vehicles/3"],
     retry: false,
   });
 
-  const { data: recentTrips } = useQuery({
+  const { data: recentTrips } = useQuery<Trip[]>({
     queryKey: ["/api/dashboard/recent-trips/5"],
     retry: false,
   });
 
-  const { data: alerts } = useQuery({
+  const { data: alerts } = useQuery<Alert[]>({
     queryKey: ["/api/alerts/unread"],
     retry: false,
   });
@@ -54,7 +55,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const alertsByType = alerts?.slice(0, 3) || [];
+  const alertsByType = (alerts || []).slice(0, 3);
 
   return (
     <div className="flex h-screen bg-background">

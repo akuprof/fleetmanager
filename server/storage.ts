@@ -162,7 +162,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVehiclesByStatus(status: string): Promise<Vehicle[]> {
-    return await db.select().from(vehicles).where(eq(vehicles.status, status));
+    return await db.select().from(vehicles).where(eq(vehicles.status, status as any));
   }
 
   // Driver operations

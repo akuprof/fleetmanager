@@ -208,8 +208,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const tripWithSplit = {
         ...validatedData,
-        driverShare: driverShare.toString(),
-        companyShare: companyShare.toString(),
+        driverShare: driverShare,
+        companyShare: companyShare,
       };
 
       const trip = await storage.createTrip(tripWithSplit);
@@ -228,8 +228,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (validatedData.totalAmount) {
         const totalAmount = parseFloat(validatedData.totalAmount.toString());
         const { driverShare, companyShare } = calculateRevenueSplit(totalAmount);
-        validatedData.driverShare = driverShare.toString();
-        validatedData.companyShare = companyShare.toString();
+        validatedData.driverShare = driverShare;
+        validatedData.companyShare = companyShare;
       }
 
       const trip = await storage.updateTrip(req.params.id, validatedData);
