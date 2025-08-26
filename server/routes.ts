@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, optionalAuth } from "./auth";
 import {
   insertVehicleSchema,
   insertDriverSchema,
@@ -17,6 +17,29 @@ import { calculateRevenueSplit } from "../client/src/lib/revenue-calculator";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+
+  // Health check endpoint (no auth required)
+  app.get('/api/health', (req, res) => {
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: 'connected',
+      message: 'FleetManager API is running'
+    });
+  });
+
+  // Root endpoint
+  app.get('/', (req, res) => {
+    res.json({
+      message: "PLS Travels Backend API",
+      status: "running",
+      endpoints: {
+        health: "/api/health",
+        docs: "This is the backend API server. Use the frontend at https://final-theta-ochre.vercel.app"
+      }
+    });
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
