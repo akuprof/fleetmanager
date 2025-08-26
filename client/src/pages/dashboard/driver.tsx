@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import DutyForm from "@/components/forms/DutyForm"; // Assuming DutyForm component exists
+import DutyForm from "@/components/forms/duty-form";
 
 export default function DriverDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
