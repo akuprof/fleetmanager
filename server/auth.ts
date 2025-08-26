@@ -1,7 +1,13 @@
 import type { Express, RequestHandler } from "express";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { storage } from "./storage";
+
+// Extend session interface to include user
+declare module "express-session" {
+  interface SessionData {
+    user?: any;
+  }
+}
 
 // Flexible authentication system for different environments
 export function getEnvironmentInfo() {
@@ -20,30 +26,36 @@ export function getEnvironmentInfo() {
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   
-  // Use PostgreSQL session store if DATABASE_URL is available
+  // Try to use PostgreSQL session store if DATABASE_URL is available
   if (process.env.DATABASE_URL) {
-    const pgStore = connectPg(session);
-    const sessionStore = new pgStore({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-      ttl: sessionTtl,
-      tableName: "sessions",
-    });
-    
-    return session({
-      secret: process.env.SESSION_SECRET || 'fleetmanager-secret-key',
-      store: sessionStore,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: sessionTtl,
-      },
-    });
+    try {
+      const pgStore = connectPg(session);
+      const sessionStore = new pgStore({
+        conString: process.env.DATABASE_URL,
+        createTableIfMissing: true,
+        ttl: sessionTtl,
+        tableName: "sessions",
+      });
+      
+      console.log('✅ Using PostgreSQL session store');
+      return session({
+        secret: process.env.SESSION_SECRET || 'fleetmanager-secret-key',
+        store: sessionStore,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: sessionTtl,
+        },
+      });
+    } catch (error: any) {
+      console.warn('⚠️ PostgreSQL session store failed, falling back to memory store:', error?.message || 'Unknown error');
+    }
   }
   
-  // Fallback to memory store for development
+  // Fallback to memory store for development or when database is unavailable
+  console.log('✅ Using memory session store');
   return session({
     secret: process.env.SESSION_SECRET || 'fleetmanager-secret-key',
     resave: false,
@@ -85,8 +97,13 @@ export async function setupAuth(app: Express) {
   if (env.isReplit) {
     // Use Replit authentication
     console.log('✅ Using Replit authentication');
-    const { setupAuth: setupReplitAuth } = await import('./replitAuth');
-    await setupReplitAuth(app);
+    try {
+      const { setupAuth: setupReplitAuth } = await import('./replitAuth');
+      await setupReplitAuth(app);
+    } catch (error: any) {
+      console.warn('⚠️ Replit authentication failed, falling back to simple auth:', error?.message || 'Unknown error');
+      await setupSimpleAuth(app);
+    }
   } else {
     // Use simplified authentication for Vercel/local
     console.log('✅ Using simplified authentication');
@@ -126,6 +143,15 @@ async function setupSimpleAuth(app: Express) {
     // Mock callback
     res.redirect("/");
   });
+  
+  // Add a simple health check for authentication
+  app.get("/api/auth/status", (req, res) => {
+    res.json({
+      authenticated: !!req.session.user,
+      user: req.session.user || null,
+      environment: getEnvironmentInfo().environment
+    });
+  });
 }
 
 // Flexible authentication middleware
@@ -134,23 +160,28 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   
   if (env.isReplit) {
     // Use Replit authentication middleware
-    const { isAuthenticated: replitAuth } = await import('./replitAuth');
-    return replitAuth(req, res, next);
-  } else {
-    // Use simplified authentication
-    if (req.session && req.session.user) {
-      req.user = req.session.user;
-      return next();
+    try {
+      const { isAuthenticated: replitAuth } = await import('./replitAuth');
+      return replitAuth(req, res, next);
+    } catch (error: any) {
+      console.warn('⚠️ Replit authentication middleware failed, using fallback:', error?.message || 'Unknown error');
+      // Fall through to simplified authentication
     }
-    
-    // For API requests, return JSON error
-    if (req.path.startsWith('/api/')) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    
-    // For web requests, redirect to login
-    return res.redirect('/api/login');
   }
+  
+  // Use simplified authentication
+  if (req.session && req.session.user) {
+    req.user = req.session.user;
+    return next();
+  }
+  
+  // For API requests, return JSON error
+  if (req.path.startsWith('/api/')) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  // For web requests, redirect to login
+  return res.redirect('/api/login');
 };
 
 // Optional authentication for public endpoints
@@ -162,7 +193,7 @@ export const optionalAuth: RequestHandler = async (req, res, next) => {
     try {
       const { isAuthenticated: replitAuth } = await import('./replitAuth');
       return replitAuth(req, res, next);
-    } catch (error) {
+    } catch (error: any) {
       // Fallback to mock user
       req.user = getMockUser();
       return next();
