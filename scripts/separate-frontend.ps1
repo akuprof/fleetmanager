@@ -19,14 +19,13 @@ New-Item -ItemType Directory -Path "$frontendDir/public" -Force
 
 # Copy frontend files
 Write-Host "Copying frontend files..." -ForegroundColor Yellow
-Copy-Item "src/*" "$frontendDir/src/" -Recurse -Force
-Copy-Item "public/*" "$frontendDir/public/" -Recurse -Force
+Copy-Item "client/src/*" "$frontendDir/src/" -Recurse -Force
+Copy-Item "client/index.html" "$frontendDir/"
 
 # Copy configuration files
 Copy-Item "vite.config.ts" "$frontendDir/"
-Copy-Item "tailwind.config.js" "$frontendDir/"
+Copy-Item "tailwind.config.ts" "$frontendDir/"
 Copy-Item "postcss.config.js" "$frontendDir/"
-Copy-Item "index.html" "$frontendDir/"
 
 # Create frontend package.json
 $frontendPackageJson = @"
