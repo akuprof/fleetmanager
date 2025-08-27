@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, optionalAuth } from "./auth";
 import {
@@ -29,16 +30,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Root endpoint
+  // Root endpoint - serve the frontend
   app.get('/', (req, res) => {
-    res.json({
-      message: "PLS Travels Backend API",
-      status: "running",
-      endpoints: {
-        health: "/api/health",
-        docs: "This is the backend API server. Use the frontend at https://final-theta-ochre.vercel.app"
-      }
-    });
+    // In production, serve the built frontend
+    if (process.env.NODE_ENV === 'production') {
+      res.sendFile(path.resolve(import.meta.dirname, 'public', 'index.html'));
+    } else {
+      res.json({
+        message: "PLS Travels Backend API",
+        status: "running",
+        endpoints: {
+          health: "/api/health",
+          docs: "This is the backend API server. Frontend is served from the same URL."
+        }
+      });
+    }
   });
 
   // Auth routes
