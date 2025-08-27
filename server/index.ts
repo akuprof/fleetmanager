@@ -66,21 +66,12 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
   
-  // Check if we're in a serverless environment (Vercel)
-  const isVercel = process.env.VERCEL || process.env.NEXTAUTH_SECRET;
-  
-  if (isVercel) {
-    // In Vercel, we don't need to listen on a port
-    // The serverless function will handle the request
-    log(`Running in Vercel serverless environment`);
-  } else {
-    // In other environments, listen on the specified port
-    server.listen({
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      log(`serving on port ${port}`);
-    });
-  }
+  // Always listen on the specified port for Render and other environments
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
 })();
