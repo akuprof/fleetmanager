@@ -21,7 +21,15 @@ async function checkDatabase() {
   console.log('🔗 Database URL:', databaseUrl.replace(/:[^:@]*@/, ':****@')); // Hide password
   
   try {
-    const pool = new Pool({ connectionString: databaseUrl });
+    // Configure SSL for production environments
+    const sslConfig = process.env.NODE_ENV === 'production' 
+      ? { ssl: { rejectUnauthorized: false } }
+      : {};
+    
+    const pool = new Pool({ 
+      connectionString: databaseUrl,
+      ...sslConfig
+    });
     
     console.log('🔄 Testing connection...');
     const client = await pool.connect();
